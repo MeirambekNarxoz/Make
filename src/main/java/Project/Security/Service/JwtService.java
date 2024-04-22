@@ -1,4 +1,4 @@
-package Project.Security.config;
+package Project.Security.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
