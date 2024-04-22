@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: MeIr@m2004
+    url: jdbc:postgresql://localhost:5432/postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+    thymeleaf:
+      prefix: classpath:/templates/
+      suffix: .html
+      encoding: UTF-8
