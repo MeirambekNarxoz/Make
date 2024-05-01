@@ -1,10 +1,8 @@
 package Project.Security.Service;
 
-import Project.Security.auth.AuthenticationRequest;
-import Project.Security.auth.AuthenticationResponse;
-import Project.Security.auth.RegisterRequest;
-import Project.Security.Role.Role;
-import Project.Security.user.User;
+import Project.Security.dto.*;
+import Project.Security.Entity.Role;
+import Project.Security.Entity.User;
 import Project.Security.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -23,6 +22,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+    //============================USERS==================================
     public AuthenticationResponse register(RegisterRequest request) {
         var user = User.builder()
                 .firstname(request.getFirstname())
@@ -30,6 +30,7 @@ public class AuthenticationService {
                 .age(request.getAge())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .balans(10000)
                 .role(Role.USER)
                 .build();
         repository.save(user);
@@ -38,7 +39,6 @@ public class AuthenticationService {
                 .token(jwtToken)
                 .build();
     }
-
     public AuthenticationResponse authentication(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -99,10 +99,10 @@ public class AuthenticationService {
         }
     }
 
-
     public ResponseEntity<User> getById(Long id) {
         return this.repository.findById(id)
                 .map(user -> ResponseEntity.ok(user))
                 .orElse(ResponseEntity.notFound().build());
     }
+
 }

@@ -1,4 +1,4 @@
-package Project.Security.auth;
+package Project.Security.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,4 +16,5 @@ public class RegisterRequest {
     private String email;
     private String password;
     private int age;
+    private int balans;
 }

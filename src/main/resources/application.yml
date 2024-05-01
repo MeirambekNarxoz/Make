@@ -12,7 +12,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
-    thymeleaf:
-      prefix: classpath:/templates/
-      suffix: .html
-      encoding: UTF-8
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB

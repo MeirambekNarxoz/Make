@@ -1,34 +1,45 @@
 package Project.Security.Controller;
 
-import Project.Security.auth.AuthenticationRequest;
-import Project.Security.auth.AuthenticationResponse;
+import Project.Security.Repository.UserRepository;
+import Project.Security.dto.*;
 import Project.Security.Service.AuthenticationService;
-import Project.Security.auth.RegisterRequest;
-import Project.Security.user.User;
+import Project.Security.Entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final AuthenticationService service;
-
+    private final UserRepository repository;
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(
+    public ResponseEntity<?> register(
             @RequestBody RegisterRequest request
-    ){
-        return ResponseEntity.ok(service.register(request));
+    ) {
+        User user = repository.findByEmail(request.getEmail()).orElse(null);
+        if(user != null){
+            return ResponseEntity.badRequest().body("User already exists");
+        }
+        return ResponseEntity.ok().body(service.register(request));
     }
 
-    @PostMapping("/authentication")
-    public ResponseEntity<AuthenticationResponse> authentication(
+    //=====================USERS===========================
+    @PostMapping("/login")
+    public ResponseEntity<?> authentication(
             @RequestBody AuthenticationRequest request
-    ){
-        return ResponseEntity.ok(service.authentication(request));
+    ) {
+        AuthenticationResponse response;
+        try {
+            response = service.authentication(request);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Authentication failed!");
+        }
+        return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/user")
@@ -56,4 +67,3 @@ public class AuthenticationController {
         return user;
     }
 }
-

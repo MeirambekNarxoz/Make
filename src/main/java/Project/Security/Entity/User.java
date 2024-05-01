@@ -1,7 +1,9 @@
-package Project.Security.user;
+package Project.Security.Entity;
 
-import Project.Security.Role.Role;
+import Project.Security.Entity.Role;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +17,7 @@ import java.util.List;
 
 @Data
 @Builder
+@Valid
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -35,11 +38,15 @@ public class User implements UserDetails {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
+    private int balans;
     @Override
     public String getPassword() {
         return password;
     }
-
+    public void setPassword(String password) {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        this.password = passwordEncoder.encode(password);
+    }
     @Override
     public String getUsername() {
         return email;
