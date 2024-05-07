@@ -1,6 +1,5 @@
 package Project.Security.Entity;
 
-import Project.Security.Entity.Role;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
@@ -47,6 +46,8 @@ public class User implements UserDetails {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         this.password = passwordEncoder.encode(password);
     }
+    @ManyToOne
+    private Subscribtion subscribtion;
     @Override
     public String getUsername() {
         return email;

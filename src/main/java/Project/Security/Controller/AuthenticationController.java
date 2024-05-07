@@ -1,5 +1,6 @@
 package Project.Security.Controller;
 
+import Project.Security.Entity.Subscribtion;
 import Project.Security.Repository.UserRepository;
 import Project.Security.dto.*;
 import Project.Security.Service.AuthenticationService;
@@ -17,6 +18,7 @@ import java.util.List;
 public class AuthenticationController {
     private final AuthenticationService service;
     private final UserRepository repository;
+//    1
     @PostMapping("/register")
     public ResponseEntity<?> register(
             @RequestBody RegisterRequest request
@@ -27,8 +29,7 @@ public class AuthenticationController {
         }
         return ResponseEntity.ok().body(service.register(request));
     }
-
-    //=====================USERS===========================
+//    2
     @PostMapping("/login")
     public ResponseEntity<?> authentication(
             @RequestBody AuthenticationRequest request
@@ -41,29 +42,41 @@ public class AuthenticationController {
         }
         return ResponseEntity.ok().body(response);
     }
-
+//3
     @GetMapping("/user")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = this.service.getAllUsers();
         return ResponseEntity.ok(users);
     }
-
+//    4
+    @GetMapping("/subscribtion")
+    public ResponseEntity<List<Subscribtion>> getAllSubscribtion() {
+        List<Subscribtion> subscribtions = this.service.getAllSubscribtion();
+        return ResponseEntity.ok(subscribtions);
+    }
+//    5
     @DeleteMapping("/user/{id}")
     public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
         this.service.deleteUserById(id);
         return ResponseEntity.noContent().build();
     }
-
+//6
     @PutMapping("/user/{id}")
     public ResponseEntity<String> updateUserById(@PathVariable Long id,
                                                  @RequestBody User updatedUser) {
         String result = this.service.updateUserById(id, updatedUser);
         return ResponseEntity.ok(result);
     }
-
+//7
     @GetMapping("/user/{id}")
     public ResponseEntity<User> getById(@PathVariable Long id) {
         ResponseEntity<User> user = this.service.getById(id);
         return user;
+    }
+//    8
+    @GetMapping("/subscribtion/{id}")
+    public ResponseEntity<Subscribtion> getSubById(@PathVariable Long id) {
+        ResponseEntity<Subscribtion> subscribtion = this.service.getSubById(id);
+        return subscribtion;
     }
 }

@@ -2,6 +2,7 @@ package Project.Security.Service;
 
 import Project.Security.Entity.Films;
 import Project.Security.Entity.Genre;
+import Project.Security.Entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -53,14 +54,19 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
+        User user = (User) userDetails;
+
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
                 .claim("authorities",userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.joining(",")))
+                .claim("SUBSCRIBTION", user.getSubscribtion().getName())
+                .claim("ID",user.getId())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                    .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 

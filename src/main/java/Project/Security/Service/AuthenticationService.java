@@ -1,5 +1,7 @@
 package Project.Security.Service;
 
+import Project.Security.Entity.Subscribtion;
+import Project.Security.Repository.SubscribtionRepository;
 import Project.Security.dto.*;
 import Project.Security.Entity.Role;
 import Project.Security.Entity.User;
@@ -21,9 +23,13 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final SubscribtionRepository subscribtionRepository;
 
     //============================USERS==================================
     public AuthenticationResponse register(RegisterRequest request) {
+        Subscribtion defaultSubscription = subscribtionRepository.findById(Long.valueOf(1))
+                .orElseThrow(() -> new RuntimeException("Default subscription with id=1 not found"));
+
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
@@ -31,6 +37,7 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .balans(10000)
+                .subscribtion(defaultSubscription)
                 .role(Role.USER)
                 .build();
         repository.save(user);
@@ -98,11 +105,17 @@ public class AuthenticationService {
             return "User not found";
         }
     }
-
+    public List<Subscribtion> getAllSubscribtion() {
+        return this.subscribtionRepository.findAll();
+    }
     public ResponseEntity<User> getById(Long id) {
         return this.repository.findById(id)
                 .map(user -> ResponseEntity.ok(user))
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    public ResponseEntity<Subscribtion> getSubById(Long id) {
+        return this.subscribtionRepository.findById(id)
+                .map(subscribtion -> ResponseEntity.ok(subscribtion))
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

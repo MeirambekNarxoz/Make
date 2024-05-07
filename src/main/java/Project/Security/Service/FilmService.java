@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 //============================Films==================================
@@ -27,37 +24,42 @@ public class FilmService {
     private final GenreRepository genreRepository;
     private final FilmRepository filmRepository;
     private final JwtService jwtService;
-    public ResponseEntity<AuthenticationResponse> createFilm(FilmDto dto, MultipartFile imageData, MultipartFile videoData) throws IOException {
-            Set<Genre> genres = dto.getGenres().stream()
-                    .map(name -> genreRepository.findByName(name))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toSet());
+    public ResponseEntity<AuthenticationResponse> createFilm(FilmDto dto, MultipartFile imageData, MultipartFile videoData) {
+        try {
+            if (dto == null || imageData == null || videoData == null || dto.getTitle() == null || dto.getGenres() == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            byte[] imageDataBytes = imageData.getBytes();
+            byte[] videoDataBytes = videoData.getBytes();
+
+            Set<Genre> genres = genreRepository.findByNameIn(dto.getGenres());
+
             Films film = Films.builder()
                     .title(dto.getTitle())
                     .director(dto.getDirector())
                     .release_date(dto.getRelease_date())
                     .descrip(dto.getDescrip())
-                    .imageData(imageData.getBytes())
-                    .videoData(videoData.getBytes())
+                    .imageData(imageDataBytes)
+                    .videoData(videoDataBytes)
+                    .genres(genres)
                     .build();
 
-            List<Genre> genreList = genreRepository.findByNameIn(dto.getGenres());
-            if (!genreList.isEmpty()) {
-                film.setGenres(new HashSet<>(genreList));
-            }
-
             Films savedFilm = filmRepository.save(film);
+
             if (savedFilm == null) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
 
-            var jwtToken = jwtService.generateTokenFilm(savedFilm);
-            return ResponseEntity.ok(AuthenticationResponse.builder()
-                    .token(jwtToken)
-                    .build());
+            String jwtToken = jwtService.generateTokenFilm(savedFilm);
 
+            return ResponseEntity.ok(AuthenticationResponse.builder().token(jwtToken).build());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+
     public ResponseEntity<AuthenticationResponse> createGenre(GenreDto dto) {
         Optional<Genre> existingGenre = genreRepository.findByName(dto.getName());
         if (existingGenre.isPresent()) {

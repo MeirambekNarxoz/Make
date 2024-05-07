@@ -24,18 +24,20 @@ import java.util.Optional;
 public class FilmController {
     private final FilmService service;
     private final GenreRepository repository;
+//    9
     @GetMapping("/genre")
     public ResponseEntity<List<Genre>> getAllGenre() {
         List<Genre> genres = this.service.getAllGenre();
         return ResponseEntity.ok(genres);
     }
-    @PostMapping("/film")
-    public ResponseEntity<AuthenticationResponse> createFilm(@ModelAttribute FilmDto dto,
-                                                             @RequestParam("imageData") MultipartFile imageData,
-                                                             @RequestParam("videoData") MultipartFile videoData) throws IOException {
+//    10
+    @PostMapping(value = "/film", consumes = "multipart/form-data")
+    public ResponseEntity<AuthenticationResponse> createFilm(@RequestPart("film") FilmDto dto,
+                                                             @RequestPart("imageData") MultipartFile imageData,
+                                                             @RequestPart("videoData") MultipartFile videoData) throws IOException {
         return ResponseEntity.ok(service.createFilm(dto, imageData, videoData).getBody());
     }
-
+//    11
     @PostMapping("/genre")
     public ResponseEntity<?> createGenre(@RequestBody GenreDto dto) {
         Genre genre = repository.findByName(dto.getName()).orElse(null);
@@ -44,6 +46,7 @@ public class FilmController {
         }
         return ResponseEntity.ok().body(service.createGenre(dto));
     }
+//    12
     @GetMapping("/film/{id}")
     public ResponseEntity<Optional<FilmDto>> findFilmById(@PathVariable Long id) {
         Optional<Films> film = this.service.findFilmById(id);
@@ -54,24 +57,26 @@ public class FilmController {
             return ResponseEntity.notFound().build();
         }
     }
+//    13
     @GetMapping("/film")
     public ResponseEntity<List<FilmDto>> getAllFilms() {
         List<Films> films = this.service.getAllFilms();
         List<FilmDto> fDto = service.mapToDtoList(films);
         return ResponseEntity.ok(fDto);
     }
+//    14
     @DeleteMapping("/film/{id}")
     public ResponseEntity<Void> deleteFilmsById(@PathVariable Long id) {
         this.service.deleteFilmsById(id);
         return ResponseEntity.noContent().build();
     }
-
+//15
     @DeleteMapping("/genre/{id}")
     public ResponseEntity<Void> deleteGenreById(@PathVariable Long id) {
         this.service.deleteGenreById(id);
         return ResponseEntity.noContent().build();
     }
-
+//16
 //    @PutMapping("/film/{id}")
 //    public ResponseEntity<String> updateFilm(@PathVariable Long id,
 //                                             @RequestBody FilmDto dto) throws IOException {
