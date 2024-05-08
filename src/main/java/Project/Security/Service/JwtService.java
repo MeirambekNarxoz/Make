@@ -29,29 +29,6 @@ public class JwtService {
         final Claims claims=extractAllClaims(token);
         return claimResolver.apply(claims);
     }
-    public String generateTokenFilm(Films films) {
-        Set<String> generes =films.getGenres().stream().map(Genre::getName).collect(Collectors.toSet());
-
-        return Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(films.getTitle())
-                .claim("genres", generes)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
-
-
-    public String generateTokenGenre(Genre genre) {
-        return Jwts.builder()
-                .setClaims(extraClaims)
-                .claim("genreId", genre.getId())
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
 
     public String generateToken(UserDetails userDetails) {
         User user = (User) userDetails;

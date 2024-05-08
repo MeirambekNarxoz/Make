@@ -1,15 +1,17 @@
 package Project.Security.Repository;
 
 import Project.Security.Entity.Films;
+import Project.Security.Entity.Genre;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface FilmRepository extends JpaRepository<Films, Long> {
     Optional<Films> findById(Long id);
-    List<Films> findByGenres_IdIn(Set<Long> genreIds);
+    @Query("SELECT f FROM Films f JOIN f.genres g WHERE g.id = :genreId")
+    List<Films> findByGenreId(@Param("genreId") Long genreId);
 }
-
 

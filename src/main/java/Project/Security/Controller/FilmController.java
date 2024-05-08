@@ -83,4 +83,10 @@ public class FilmController {
 //        String result = this.service.updateFilm(id, dto).getBody();
 //        return ResponseEntity.ok(result);
 //    }
+//    17
+@GetMapping("/filmGenre/{id}")
+public List<FilmDto> getByGenreId(@PathVariable("id") Long id) {
+    return service.findByGenreId(id);
+}
+
 }

@@ -17,9 +17,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 //============================Films==================================
 @Service
 @RequiredArgsConstructor
+
 public class FilmService {
     private final GenreRepository genreRepository;
     private final FilmRepository filmRepository;
@@ -51,14 +53,13 @@ public class FilmService {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
 
-            String jwtToken = jwtService.generateTokenFilm(savedFilm);
-
-            return ResponseEntity.ok(AuthenticationResponse.builder().token(jwtToken).build());
+            return ResponseEntity.ok(AuthenticationResponse.builder().build());
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
     public ResponseEntity<AuthenticationResponse> createGenre(GenreDto dto) {
         Optional<Genre> existingGenre = genreRepository.findByName(dto.getName());
@@ -70,10 +71,7 @@ public class FilmService {
         var genre = Genre.builder().name(dto.getName()).build();
         genreRepository.save(genre);
 
-        // создаем и возвращаем JWT-токен
-        var jwtToken = jwtService.generateTokenGenre(genre);
         return ResponseEntity.ok(AuthenticationResponse.builder()
-                .token(jwtToken)
                 .build());
     }
 
@@ -143,6 +141,13 @@ public class FilmService {
 //            return ResponseEntity.notFound().build();
 //        }
 //    }
+
+    public List<FilmDto> findByGenreId(Long id) {
+        return filmRepository.findByGenreId(id).stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
     public FilmDto mapToDto(Films film) {
         FilmDto dto = new FilmDto();
         dto.setId(film.getId());
