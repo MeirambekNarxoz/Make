@@ -41,6 +41,7 @@ public class JwtService {
                         .collect(Collectors.joining(",")))
                 .claim("SUBSCRIBTION", user.getSubscribtion().getName())
                 .claim("ID",user.getId())
+                .claim("lastname",user.getLastname())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
