@@ -1,6 +1,7 @@
 package Project.Security.Service;
 
 import Project.Security.Entity.Subscribtion;
+import Project.Security.Repository.CommentRepository;
 import Project.Security.Repository.SubscribtionRepository;
 import Project.Security.dto.*;
 import Project.Security.Entity.Role;
@@ -24,6 +25,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final SubscribtionRepository subscribtionRepository;
+    private final CommentRepository commentRepository;
 
     //============================USERS==================================
     public AuthenticationResponse register(RegisterRequest request) {
@@ -66,6 +68,7 @@ public class AuthenticationService {
 
     public ResponseEntity<Void> deleteUserById(Long id) {
         if (this.repository.existsById(id)) {
+            commentRepository.deleteByFilmsId(id);
             this.repository.deleteById(id);
             return ResponseEntity.noContent().build();
         } else {

@@ -2,6 +2,7 @@ package Project.Security.Service;
 
 import Project.Security.Entity.Films;
 import Project.Security.Entity.Genre;
+import Project.Security.Repository.CommentRepository;
 import Project.Security.Repository.FilmRepository;
 import Project.Security.Repository.GenreRepository;
 import Project.Security.dto.AuthenticationResponse;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final GenreRepository genreRepository;
     private final FilmRepository filmRepository;
+    private final CommentRepository commentRepository;
     private final JwtService jwtService;
     public ResponseEntity<AuthenticationResponse> createFilm(FilmDto dto, MultipartFile imageData, MultipartFile videoData) {
         try {
@@ -35,7 +37,7 @@ public class FilmService {
             byte[] imageDataBytes = imageData.getBytes();
             byte[] videoDataBytes = videoData.getBytes();
 
-            Set<Genre> genres = genreRepository.findByNameIn(dto.getGenres());
+            List<Genre> genres = genreRepository.findByNameIn(dto.getGenres());
 
             Films film = Films.builder()
                     .title(dto.getTitle())
@@ -82,12 +84,13 @@ public class FilmService {
         return this.genreRepository.findAll();
     }
 
-    public Optional<Films> findFilmById(Long id) {
-        return this.filmRepository.findById(id);
+    public Films findFilmById(Long id) {
+        return this.filmRepository.findById(id).orElse(null);
     }
 
     public ResponseEntity<Void> deleteFilmsById(Long id) {
         if (this.filmRepository.existsById(id)) {
+            commentRepository.deleteByFilmsId(id);
             this.filmRepository.deleteById(id);
             return ResponseEntity.noContent().build();
         } else {
@@ -111,36 +114,36 @@ public class FilmService {
         }
     }
 
-//    public ResponseEntity<String> updateFilm(Long id, FilmDto dto) {
-//        Optional<Films> filmOptional = filmRepository.findById(id);
-//        if (filmOptional.isPresent()) {
-//            Films existingFilm = filmOptional.get();
-//            if (dto.getTitle() != null && dto.getDirector() != null && dto.getRelease_date() != null) {
-//                existingFilm.setTitle(dto.getTitle());
-//                existingFilm.setDirector(dto.getDirector());
-//                existingFilm.setRelease_date(dto.getRelease_date());
-//
-//                if (dto.getDescrip() != null) {
-//                    existingFilm.setDescrip(dto.getDescrip());
-//                }
-//
-//                if (dto.getGenres() != null) {
-//                    List<Genre> genreList = genreRepository.findByNameIn(dto.getGenres());
-//                    if (!genreList.isEmpty()) {
-//                        existingFilm.getGenres().clear();
+    public ResponseEntity<String> updateFilm(Long id, FilmDto dto) {
+        Optional<Films> filmOptional = filmRepository.findById(id);
+        if (filmOptional.isPresent()) {
+            Films existingFilm = filmOptional.get();
+            if (dto.getTitle() != null && dto.getDirector() != null && dto.getRelease_date() != null) {
+                existingFilm.setTitle(dto.getTitle());
+                existingFilm.setDirector(dto.getDirector());
+                existingFilm.setRelease_date(dto.getRelease_date());
+
+                if (dto.getDescrip() != null) {
+                    existingFilm.setDescrip(dto.getDescrip());
+                }
+
+                if (dto.getGenres() != null) {
+                    List<Genre> genreList = genreRepository.findByNameIn(dto.getGenres());
+                    if (!genreList.isEmpty()) {
+                        existingFilm.getGenres().clear();
 //                        existingFilm.setGenres(new HashSet<>(genreList));
-//                    }
-//                }
-//
-//                this.filmRepository.save(existingFilm);
-//                return ResponseEntity.ok("Updated");
-//            } else {
-//                return ResponseEntity.badRequest().body("Film details cannot be null");
-//            }
-//        } else {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
+                    }
+                }
+
+                this.filmRepository.save(existingFilm);
+                return ResponseEntity.ok("Updated");
+            } else {
+                return ResponseEntity.badRequest().body("Film details cannot be null");
+            }
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     public List<FilmDto> findByGenreId(Long id) {
         return filmRepository.findByGenreId(id).stream()
@@ -155,13 +158,19 @@ public class FilmService {
         dto.setDirector(film.getDirector());
         dto.setReleaseDate(film.getReleaseDate());
         dto.setDescrip(film.getDescrip());
-        dto.setGenres(film.getGenres().stream()
-                .map(genre -> genre.getName())
-                .collect(Collectors.toList()));
-        dto.setImageData(film.getImageData()); // Assuming you don't want to expose the image data
-        dto.setVideoData(film.getVideoData()); // Assuming you don't want to expose the video data
+        List<String> genres = film.getGenres().stream()
+                .map(Genre::getName)
+                .collect(Collectors.toList());
+        dto.setGenres(genres);
+        dto.setImageData(film.getImageData());
+        dto.setVideoData(film.getVideoData());
+
+        // Вывод в консоль для проверки
+//        System.out.println("Film ID: " + film.getId() + ", Genres: " + genres);
+
         return dto;
     }
+
 
     public List<FilmDto> mapToDtoList(List<Films> films) {
         return films.stream()

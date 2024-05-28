@@ -22,7 +22,7 @@ public class CommentService {
 
     public Comment addComment(CommentDto commentDto) {
         User user = userRepository.findById(commentDto.getUserId()).orElseThrow(() -> new IllegalArgumentException("User not found with id: " + commentDto.getUserId()));
-        Films film = filmRepository.findById(commentDto.getFilmId()).orElseThrow(() -> new IllegalArgumentException("Film not found with id: " + commentDto.getFilmId()));
+        Films film = filmRepository.findById(commentDto.getFilmId()).orElse(null);
         Comment newComment = new Comment();
         newComment.setUser(user);
         newComment.setFilms(film);

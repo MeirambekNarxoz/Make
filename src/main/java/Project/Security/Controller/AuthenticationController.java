@@ -57,6 +57,7 @@ public class AuthenticationController {
 //    5
     @DeleteMapping("/user/{id}")
     public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
+
         this.service.deleteUserById(id);
         return ResponseEntity.noContent().build();
     }

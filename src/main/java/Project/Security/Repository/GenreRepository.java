@@ -11,7 +11,7 @@ import java.util.Set;
 @Repository
 public interface GenreRepository extends JpaRepository<Genre, Long> {
     Optional<Genre> findById(Long id);
-    Set<Genre> findByNameIn(List<String> names );
+    List<Genre> findByNameIn(List<String> names );
     Optional<Genre> findByName(String name);
 
 }

@@ -48,11 +48,11 @@ public class FilmController {
     }
 //    12
     @GetMapping("/film/{id}")
-    public ResponseEntity<Optional<FilmDto>> findFilmById(@PathVariable Long id) {
-        Optional<Films> film = this.service.findFilmById(id);
-        if (film.isPresent()) {
-            FilmDto fDto = service.mapToDto(film.get());
-            return ResponseEntity.ok(Optional.of(fDto));
+    public ResponseEntity<?> findFilmById(@PathVariable Long id) {
+        Films film = this.service.findFilmById(id);
+        if (film != null) {
+            FilmDto fDto = service.mapToDto(film);
+            return ResponseEntity.ok(fDto);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -77,16 +77,19 @@ public class FilmController {
         return ResponseEntity.noContent().build();
     }
 //16
-//    @PutMapping("/film/{id}")
-//    public ResponseEntity<String> updateFilm(@PathVariable Long id,
-//                                             @RequestBody FilmDto dto) throws IOException {
-//        String result = this.service.updateFilm(id, dto).getBody();
-//        return ResponseEntity.ok(result);
-//    }
+    @PutMapping("/film/{id}")
+    public ResponseEntity<String> updateFilm(@PathVariable Long id,
+                                             @RequestBody FilmDto dto) throws IOException {
+        String result = this.service.updateFilm(id, dto).getBody();
+        return ResponseEntity.ok(result);
+    }
 //    17
 @GetMapping("/filmGenre/{id}")
 public List<FilmDto> getByGenreId(@PathVariable("id") Long id) {
     return service.findByGenreId(id);
 }
-
+@GetMapping("/filmTest/{id}")
+    public Films getById(@PathVariable("id")Long id){
+        return service.findFilmById(id);
+}
 }
