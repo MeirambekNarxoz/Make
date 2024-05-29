@@ -1,95 +1,100 @@
 package Project.Security.Controller;
 
+import Project.Security.Entity.Comment;
 import Project.Security.Entity.Films;
 import Project.Security.Entity.Genre;
-import Project.Security.Repository.GenreRepository;
-import Project.Security.Service.FilmService;
+import Project.Security.Service.FilmFacade;
 import Project.Security.dto.AuthenticationResponse;
+import Project.Security.dto.CommentDto;
 import Project.Security.dto.FilmDto;
 import Project.Security.dto.GenreDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
-//============================Films==================================
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class FilmController {
-    private final FilmService service;
-    private final GenreRepository repository;
-//    9
+    private final FilmFacade filmFacade;
+
     @GetMapping("/genre")
     public ResponseEntity<List<Genre>> getAllGenre() {
-        List<Genre> genres = this.service.getAllGenre();
-        return ResponseEntity.ok(genres);
+        return ResponseEntity.ok(filmFacade.getAllGenre());
     }
-//    10
+
     @PostMapping(value = "/film", consumes = "multipart/form-data")
     public ResponseEntity<AuthenticationResponse> createFilm(@RequestPart("film") FilmDto dto,
                                                              @RequestPart("imageData") MultipartFile imageData,
                                                              @RequestPart("videoData") MultipartFile videoData) throws IOException {
-        return ResponseEntity.ok(service.createFilm(dto, imageData, videoData).getBody());
+        return ResponseEntity.ok(filmFacade.createFilm(dto, imageData, videoData).getBody());
     }
-//    11
+
     @PostMapping("/genre")
     public ResponseEntity<?> createGenre(@RequestBody GenreDto dto) {
-        Genre genre = repository.findByName(dto.getName()).orElse(null);
-        if (genre != null){
-            return ResponseEntity.badRequest().body("Genre already exists");
-        }
-        return ResponseEntity.ok().body(service.createGenre(dto));
+        return ResponseEntity.ok().body(filmFacade.createGenre(dto));
     }
-//    12
+
     @GetMapping("/film/{id}")
     public ResponseEntity<?> findFilmById(@PathVariable Long id) {
-        Films film = this.service.findFilmById(id);
+        Films film = filmFacade.findFilmById(id);
         if (film != null) {
-            FilmDto fDto = service.mapToDto(film);
-            return ResponseEntity.ok(fDto);
+            return ResponseEntity.ok(filmFacade.mapToDto(film));
         } else {
             return ResponseEntity.notFound().build();
         }
     }
-//    13
+
     @GetMapping("/film")
     public ResponseEntity<List<FilmDto>> getAllFilms() {
-        List<Films> films = this.service.getAllFilms();
-        List<FilmDto> fDto = service.mapToDtoList(films);
-        return ResponseEntity.ok(fDto);
+        return ResponseEntity.ok(filmFacade.mapToDtoList(filmFacade.getAllFilms()));
     }
-//    14
+
     @DeleteMapping("/film/{id}")
     public ResponseEntity<Void> deleteFilmsById(@PathVariable Long id) {
-        this.service.deleteFilmsById(id);
-        return ResponseEntity.noContent().build();
+        return filmFacade.deleteFilmsById(id);
     }
-//15
+
     @DeleteMapping("/genre/{id}")
-    public ResponseEntity<Void> deleteGenreById(@PathVariable Long id) {
-        this.service.deleteGenreById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteGenreById(@PathVariable Long id) {
+        return filmFacade.deleteGenreById(id);
     }
-//16
+
     @PutMapping("/film/{id}")
-    public ResponseEntity<String> updateFilm(@PathVariable Long id,
-                                             @RequestBody FilmDto dto) throws IOException {
-        String result = this.service.updateFilm(id, dto).getBody();
-        return ResponseEntity.ok(result);
+    public ResponseEntity<String> updateFilm(@PathVariable Long id, @RequestBody FilmDto dto) throws IOException {
+        return ResponseEntity.ok(filmFacade.updateFilm(id, dto).getBody());
     }
-//    17
-@GetMapping("/filmGenre/{id}")
-public List<FilmDto> getByGenreId(@PathVariable("id") Long id) {
-    return service.findByGenreId(id);
-}
-@GetMapping("/filmTest/{id}")
-    public Films getById(@PathVariable("id")Long id){
-        return service.findFilmById(id);
-}
+
+    @GetMapping("/filmGenre/{id}")
+    public List<FilmDto> getByGenreId(@PathVariable("id") Long id) {
+        return filmFacade.findByGenreId(id);
+    }
+
+    @GetMapping("/filmTest/{id}")
+    public Films getById(@PathVariable("id") Long id) {
+        return filmFacade.findFilmById(id);
+    }
+
+    @PostMapping("/comments")
+    public ResponseEntity<Comment> addComment(@RequestBody CommentDto commentDto) {
+        Comment newComment = filmFacade.addComment(commentDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newComment);
+    }
+
+    @GetMapping("/comments/{filmId}")
+    public ResponseEntity<List<Comment>> getAllCommentsForFilm(@PathVariable Long filmId) {
+        List<Comment> comments = filmFacade.getAllCommentsForFilm(filmId);
+        return ResponseEntity.ok(comments);
+    }
+
+    @DeleteMapping("/comments/{id}")
+    public ResponseEntity<Void> deleteCommentById(@PathVariable Long id) {
+        return filmFacade.deleteCommentById(id);
+    }
 }
