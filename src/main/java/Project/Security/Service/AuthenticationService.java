@@ -97,7 +97,9 @@ public class AuthenticationService {
                 if (updatedUser.getPassword() != null) {
                     existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
                 }
-
+                if (updatedUser.getSubscribtion() != null) {
+                    existingUser.setSubscribtion(updatedUser.getSubscribtion());
+                }
                 existingUser.setId(id);
                 this.repository.save(existingUser);
                 return "Updated";

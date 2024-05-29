@@ -19,4 +19,5 @@ public class Subscribtion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private int amount;
 }
