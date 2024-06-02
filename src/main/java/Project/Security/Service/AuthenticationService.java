@@ -3,10 +3,12 @@ package Project.Security.Service;
 import Project.Security.Entity.Subscribtion;
 import Project.Security.Repository.CommentRepository;
 import Project.Security.Repository.SubscribtionRepository;
+import Project.Security.Repository.SubscriptionStrategy;
 import Project.Security.dto.*;
 import Project.Security.Entity.Role;
 import Project.Security.Entity.User;
 import Project.Security.Repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,7 +28,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final SubscribtionRepository subscribtionRepository;
     private final CommentRepository commentRepository;
-
+    private final SubscriptionFactory subscriptionFactory;
     //============================USERS==================================
     public AuthenticationResponse register(RegisterRequest request) {
         Subscribtion defaultSubscription = subscribtionRepository.findById(Long.valueOf(1))
@@ -79,9 +81,6 @@ public class AuthenticationService {
         if (this.repository.existsById(id)) {
             User existingUser = this.repository.findById(id).orElse(null);
             if (existingUser != null) {
-                if (updatedUser.getRole() != null) {
-                    existingUser.setRole(updatedUser.getRole());
-                }
                 if (updatedUser.getFirstname() != null) {
                     existingUser.setFirstname(updatedUser.getFirstname());
                 }
@@ -98,9 +97,10 @@ public class AuthenticationService {
                     existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
                 }
                 if (updatedUser.getSubscribtion() != null) {
-                    existingUser.setSubscribtion(updatedUser.getSubscribtion());
+                    Subscribtion subscription = subscribtionRepository.findById(updatedUser.getSubscribtion().getId())
+                            .orElseThrow(() -> new RuntimeException("Subscription not found"));
+                    existingUser.setSubscribtion(subscription);
                 }
-                existingUser.setId(id);
                 this.repository.save(existingUser);
                 return "Updated";
             } else {
@@ -122,5 +122,21 @@ public class AuthenticationService {
         return this.subscribtionRepository.findById(id)
                 .map(subscribtion -> ResponseEntity.ok(subscribtion))
                 .orElse(ResponseEntity.notFound().build());
+    }
+    @Transactional
+    public String processPayment(PaymentRequest paymentRequest) {
+        User user = repository.findById(paymentRequest.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Assuming that 'type' is the name of the subscription
+        Subscribtion subscription = subscribtionRepository.findByName(paymentRequest.getType()).orElseThrow(() -> new RuntimeException("Subscription not found"));
+
+        if (user.getBalans() < subscription.getAmount()) {
+            throw new RuntimeException("Insufficient balance");
+        }
+
+        SubscriptionStrategy strategy = subscriptionFactory.getStrategy(subscription);
+        strategy.processSubscription(user, subscription);
+
+        return "Payment processed successfully";
     }
 }

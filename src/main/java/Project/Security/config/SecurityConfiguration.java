@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -24,43 +23,11 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/**")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
-                .sessionManagement( (sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                ))
-//                                .formLogin(formLogin -> formLogin
-//                        .loginPage("/api/v1/login")
-//                        .permitAll()
-//                )
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/**").permitAll()
+                        .anyRequest().authenticated())
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-
-
-
-
-
-//                .csrf(csrf -> csrf.disable())
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/api/v1/auth/**").permitAll()
-//                        .anyRequest()
-//                )
-////                .formLogin(formLogin -> formLogin
-////                        .loginPage("/login")
-////                        .permitAll()
-////                )
-////                .logout(logout -> logout
-////                        .invalidateHttpSession(true)
-////                        .clearAuthentication(true)
-////                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-////                        .logoutSuccessUrl("/login?logout")
-////                        .permitAll()
-////                )
-//                .authenticationProvider(authenticationProvider)
-//                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }

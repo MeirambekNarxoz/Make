@@ -2,6 +2,7 @@ package Project.Security.Controller;
 
 import Project.Security.Entity.Subscribtion;
 import Project.Security.Repository.UserRepository;
+import Project.Security.Service.SubscribtionService;
 import Project.Security.dto.*;
 import Project.Security.Service.AuthenticationService;
 import Project.Security.Entity.User;
@@ -18,6 +19,7 @@ import java.util.List;
 public class AuthenticationController {
     private final AuthenticationService service;
     private final UserRepository repository;
+    private final SubscribtionService subscribtionService;
 //    1
     @PostMapping("/register")
     public ResponseEntity<?> register(
@@ -62,12 +64,10 @@ public class AuthenticationController {
         return ResponseEntity.noContent().build();
     }
 //6
-    @PutMapping("/user/{id}")
-    public ResponseEntity<String> updateUserById(@PathVariable Long id,
-                                                 @RequestBody User updatedUser) {
-        String result = this.service.updateUserById(id, updatedUser);
-        return ResponseEntity.ok(result);
-    }
+@PutMapping("/user/{id}")
+public ResponseEntity<String> updateUserById(@PathVariable Long id, @RequestBody User updatedUser) {
+    return ResponseEntity.ok(service.updateUserById(id, updatedUser));
+}
 //7
     @GetMapping("/user/{id}")
     public ResponseEntity<User> getById(@PathVariable Long id) {
@@ -79,5 +79,19 @@ public class AuthenticationController {
     public ResponseEntity<Subscribtion> getSubById(@PathVariable Long id) {
         ResponseEntity<Subscribtion> subscribtion = this.service.getSubById(id);
         return subscribtion;
+    }
+    @PostMapping("/process-payment")
+    public ResponseEntity<String> processPayment(@RequestBody PaymentRequest paymentRequest) {
+        try {
+            String result = service.processPayment(paymentRequest);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    @GetMapping("/subscriptions")
+    public ResponseEntity<List<Subscribtion>> getAllSubscriptions() {
+        List<Subscribtion> subscriptions = subscribtionService.getAllSubscriptions();
+        return ResponseEntity.ok(subscriptions);
     }
 }
