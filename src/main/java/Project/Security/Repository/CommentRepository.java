@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByFilmsId(Long filmId);
-
+    List<Comment> findByUserId(Long userId);
     @Transactional
     void deleteByFilmsId(Long filmId);
 

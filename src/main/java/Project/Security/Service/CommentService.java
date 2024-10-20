@@ -40,4 +40,8 @@ public class CommentService {
             return ResponseEntity.notFound().build();
         }
     }
+    public List<Comment> getAllCommentsByUserId(Long userId) {
+        return commentRepository.findByUserId(userId);
+    }
+
 }

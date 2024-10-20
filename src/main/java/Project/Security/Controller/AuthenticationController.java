@@ -1,7 +1,10 @@
 package Project.Security.Controller;
 
+import Project.Security.Entity.Comment;
 import Project.Security.Entity.Subscribtion;
 import Project.Security.Repository.UserRepository;
+import Project.Security.Service.CommentService;
+import Project.Security.Service.FilmFacade;
 import Project.Security.Service.SubscribtionService;
 import Project.Security.dto.*;
 import Project.Security.Service.AuthenticationService;
@@ -20,6 +23,8 @@ public class AuthenticationController {
     private final AuthenticationService service;
     private final UserRepository repository;
     private final SubscribtionService subscribtionService;
+    private final CommentService commentService;
+
 //    1
     @PostMapping("/register")
     public ResponseEntity<?> register(
@@ -59,6 +64,12 @@ public class AuthenticationController {
 //    5
     @DeleteMapping("/user/{id}")
     public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
+        List<Comment> userComments = commentService.getAllCommentsByUserId(id);
+
+        // Удаляем каждый комментарий
+        for (Comment comment : userComments) {
+            commentService.deleteCommentById(comment.getId());
+        }
 
         this.service.deleteUserById(id);
         return ResponseEntity.noContent().build();

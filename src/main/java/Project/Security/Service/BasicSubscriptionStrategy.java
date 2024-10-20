@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BasicSubscriptionStrategy implements SubscriptionStrategy {
     private final UserRepository userRepository;
-    private static final Long ADMIN_ID = 8L;
+    private static final Long ADMIN_ID = 1L;
 
     @Override
     public void processSubscription(User user, Subscribtion subscription) {
