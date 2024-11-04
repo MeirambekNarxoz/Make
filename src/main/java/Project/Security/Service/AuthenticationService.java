@@ -1,28 +1,28 @@
 package Project.Security.Service;
 
 import Project.Security.Entity.Subscribtion;
-import Project.Security.Repository.CommentRepository;
-import Project.Security.Repository.SubscribtionRepository;
-import Project.Security.Repository.SubscriptionStrategy;
+import Project.Security.Repository.*;
 import Project.Security.dto.*;
 import Project.Security.Entity.Role;
 import Project.Security.Entity.User;
-import Project.Security.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
     private final UserRepository repository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -33,6 +33,8 @@ public class AuthenticationService {
     public AuthenticationResponse register(RegisterRequest request) {
         Subscribtion defaultSubscription = subscribtionRepository.findById(Long.valueOf(1))
                 .orElseThrow(() -> new RuntimeException("Default subscription with id=1 not found"));
+        Role defaultRole = roleRepository.findById(2L).orElse(null);
+
 
         var user = User.builder()
                 .firstname(request.getFirstname())
@@ -42,7 +44,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .balans(10000)
                 .subscribtion(defaultSubscription)
-                .role(Role.USER)
+                .role(defaultRole)
                 .build();
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
@@ -139,4 +141,13 @@ public class AuthenticationService {
 
         return "Payment processed successfully";
     }
+    public User updateUserRole(Long userId, Role newRole) {
+        // Получение пользователя и обновление роли без проверки на администратора
+        User user = repository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        user.setRole(newRole);
+        return repository.save(user);
+    }
+
+
+
 }

@@ -1,7 +1,9 @@
 package Project.Security.Controller;
 
 import Project.Security.Entity.Comment;
+import Project.Security.Entity.Role;
 import Project.Security.Entity.Subscribtion;
+import Project.Security.Repository.RoleRepository;
 import Project.Security.Repository.UserRepository;
 import Project.Security.Service.CommentService;
 import Project.Security.Service.FilmFacade;
@@ -12,6 +14,8 @@ import Project.Security.Entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -21,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final AuthenticationService service;
+    private final RoleRepository roleRepository;
     private final UserRepository repository;
     private final SubscribtionService subscribtionService;
     private final CommentService commentService;
@@ -105,4 +110,49 @@ public ResponseEntity<String> updateUserById(@PathVariable Long id, @RequestBody
         List<Subscribtion> subscriptions = subscribtionService.getAllSubscriptions();
         return ResponseEntity.ok(subscriptions);
     }
+    @PutMapping("/users/{id}/role")
+    public ResponseEntity<String> updateUserRole(@PathVariable Long id) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            }
+
+            User currentUser = repository.findByEmail(auth.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+
+
+            // Находим пользователя для обновления
+            User userToUpdate = repository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("User to update not found"));
+
+            // Переключаем роль
+            String currentRole = userToUpdate.getRole().getName();
+            String newRole;
+
+            if ("ADMIN".equals(currentRole)) {
+                newRole = "USER"; // Если текущая роль ADMIN, меняем на USER
+            } else {
+                newRole = "ADMIN"; // Если текущая роль не ADMIN, меняем на ADMIN
+            }
+
+            Role role = roleRepository.findByName(newRole)
+                    .orElseThrow(() -> new RuntimeException(newRole + " role not found"));
+
+            userToUpdate.setRole(role); // Устанавливаем новую роль
+            repository.save(userToUpdate); // Сохраняем изменения
+
+            return ResponseEntity.ok("User role updated to " + newRole);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+
+
+
+
+
+
 }

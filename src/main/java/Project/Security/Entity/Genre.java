@@ -19,7 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "genres")
+@Table(name = "t_genres")
 public class Genre  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
